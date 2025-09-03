@@ -7,11 +7,6 @@
   
   <h1>WHMCS Esewa Payment Gateway (V2)</h1>
 
-  <a href="https://readme-typing-svg.demolab.com?pause=1000&center=true&vCenter=true&width=600&lines=Seamless+Esewa+Payments+in+WHMCS;Fast.+Secure.+Made+for+NPR+(₨)" target="_blank">
-    <img src="https://readme-typing-svg.demolab.com?pause=1000&center=true&vCenter=true&width=600&lines=Seamless+Esewa+Payments+in+WHMCS;Fast.+Secure.+Made+for+NPR+(₨)" alt="Animated headline" />
-  </a>
-
-  <img src="https://svg-banners.vercel.app/api?type=glitch&text1=Integrate%20Esewa%20with%20WHMCS&width=900&height=140" alt="Animated banner" />
 
   <p>
     <a href="#license"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT"></a>
