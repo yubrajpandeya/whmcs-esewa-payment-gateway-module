@@ -26,7 +26,6 @@ This repository provides a WHMCS payment gateway module for integrating Esewa, a
 - Supports NPR (Nepalese Rupee)
 
 ## Table of Contents
-- [Demo](#demo)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Folder Structure](#folder-structure)
@@ -35,16 +34,6 @@ This repository provides a WHMCS payment gateway module for integrating Esewa, a
 - [Support](#support)
 - [License](#license)
 
-## Demo
-
-A quick look at the checkout and payment flow.
-
-<!-- Replace docs/demo.gif with your own GIF recording of the WHMCS checkout using this gateway -->
-<p align="center">
-  <img src="docs/demo.gif" alt="Esewa WHMCS demo animation" width="820" />
-</p>
-
-Tip: Record a short GIF (e.g., with ScreenToGif on Windows) and save it to `docs/demo.gif` to replace the placeholder above.
 
 ## Installation
 
@@ -105,7 +94,7 @@ Contributions are welcome! Please open an issue to discuss changes or submit a P
 ## Support
 
 - Open an issue with a clear description and reproduction steps.
-- For direct inquiries, contact the maintainer.
+
 
 ## Developer
 
