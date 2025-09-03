@@ -54,8 +54,6 @@ In the gateway settings, be sure to:
 
 ## Folder Structure
 
-<details>
-<summary>Click to expand</summary>
 
 ```
 modules/
@@ -70,7 +68,6 @@ modules/
       whmcs.json
 ```
 
-</details>
 
 ## Troubleshooting
 
