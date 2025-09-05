@@ -3,8 +3,6 @@
 /**
  * eSewa Payment Gateway WHMCS Module Callback Handler
  * 
- * @see https://yubrajpandeya.com.np
- * 
  * @author : @yubrajpandeya
  */
 
@@ -14,6 +12,9 @@ require_once __DIR__ . '/../../../init.php';
 require_once __DIR__ . '/../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../includes/invoicefunctions.php';
 
+# Require libraries
+require_once __DIR__ . '/../esewaV2/init.php';
+
 $gatewayModuleName = "esewaV2";
 $gatewayParams = getGatewayVariables($gatewayModuleName);
 
@@ -21,7 +22,7 @@ if (!$gatewayParams["type"]) {
     die("Module Not Activated");
 }
 
-// Accept GET or POST
+// Accept GET
 $dataEncoded = $_GET['data'] ?? null;
 
 if ($dataEncoded) {
@@ -36,9 +37,23 @@ if ($dataEncoded) {
     $invoiceId = explode("-", $transactionUuid)[0];
     $paymentAmount = $decoded['total_amount'];
     $status = $decoded['status'];
-    $receivedSignature = $decoded['signature'];
-    $signedFields = explode(',', $decoded['signed_field_names']);
-    $productCode = $decoded['product_code'];
+    $receivedSignature = $decoded['signature'] ?? '';
+    $signedFields = isset($decoded['signed_field_names']) ? explode(',', $decoded['signed_field_names']) : [];
+    $productCode = $decoded['product_code'] ?? '';
+
+    // Validate invoice ID
+    $invoiceId = checkCbInvoiceID($invoiceId, $gatewayParams['name']);
+
+    // Verify transaction is unique
+    checkCbTransID($transactionUuid);
+
+    // Validate invoice amount
+    $invoice = WHMCS\Billing\Invoice::find($invoiceId);
+    if (!$invoice || $invoice->total != $paymentAmount) {
+        logTransaction("eSewa V2", $decoded, "Amount Mismatch");
+        header("Location: " . $gatewayParams['systemurl'] . "/viewinvoice.php?id=" . $invoiceId . "&paymentfailed=true");
+        exit;
+    }
 
     // Rebuild signature data
     $signatureData = '';
@@ -49,17 +64,36 @@ if ($dataEncoded) {
     }
     $signatureData = rtrim($signatureData, ',');
 
-    $secretKey = $gatewayParams['testmode'] == 'on' ? '8gBm/:&EnhH.1/q' : $gatewayParams['secret_key'];
+    $secretKey = ($gatewayParams['test_mode'] == 'on')
+        ? $gatewayParams['test_secret_key']
+        : $gatewayParams['secret_key'];
+
     $generatedSignature = base64_encode(hash_hmac('sha256', $signatureData, $secretKey, true));
 
-    if (hash_equals($generatedSignature, $receivedSignature) && $status === "COMPLETE") {
+    // Verify with eSewa API (extra layer of validation)
+    $url = $gatewayParams['test_mode'] == 'on' 
+        ? 'https://rc.esewa.com.np/api/epay/transaction/status/' 
+        : 'https://epay.esewa.com.np/api/epay/transaction/status/';
+
+    $verifyUrl = $url . '?' . http_build_query($decoded);
+
+    $ch = curl_init($verifyUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $result = curl_exec($ch);
+    curl_close($ch);
+
+    $verifyResponse = json_decode($result, true);
+    $verifiedStatus = $verifyResponse['status'] ?? '';
+
+    if (hash_equals($generatedSignature, $receivedSignature) && $status === "COMPLETE" && $verifiedStatus === "COMPLETE") {
         addInvoicePayment($invoiceId, $transactionUuid, $paymentAmount, 0, $gatewayModuleName);
         logTransaction("eSewa V2", $decoded, "Successful");
-    } else {
-        logTransaction("eSewa V2", $decoded, "Invalid Signature or Status");
-    }
 
-    header("Location: " . $gatewayParams['systemurl'] . "/viewinvoice.php?id=" . $invoiceId);
+        header("Location: " . $gatewayParams['systemurl'] . "/viewinvoice.php?id=" . $invoiceId . "&paymentsuccess=true");
+    } else {
+        logTransaction("eSewa V2", $decoded, "Invalid Signature/Status or Verification Failed");
+        header("Location: " . $gatewayParams['systemurl'] . "/viewinvoice.php?id=" . $invoiceId . "&paymentfailed=true");
+    }
     exit;
 
 } else {
