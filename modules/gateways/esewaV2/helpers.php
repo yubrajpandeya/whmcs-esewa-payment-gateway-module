@@ -21,7 +21,7 @@ function redirect($path)
 }
 
 /**
- * Encode invoice to pass unique Invoice number
+ * Encode invoice to pass a unique Invoice number
  * 
  * @param int length
  * @return string
@@ -60,4 +60,24 @@ function randomString($leng=100) {
     }
 
     return $random;
+}
+
+function generateSignature(string $secretKey, array $data): string
+{
+    $signedFields = "total_amount={$data['amount']}," .
+        "transaction_uuid={$data['transaction_uuid']}," .
+        "product_code={$data['product_code']}";
+
+    return base64_encode(hash_hmac('sha256', $signedFields, $secretKey ?? '', true));
+}
+
+/**
+ * Decrypt the signature for the payment.
+ *
+ * @param string $data
+ * @return array
+*/
+function decodeSignature(string $data): array
+{
+    return json_decode(base64_decode($data), true);
 }
