@@ -1,11 +1,4 @@
 <?php
-/**
- * eSewa Payment Gateway WHMCS Module 
- * 
- * @see https://yubrajpandeya.com.np
- * 
- * @author : @yubrajpandeya
- */
 
 if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
@@ -24,7 +17,6 @@ function esewaV2_MetaData()
     );
 }
 
-
 function esewaV2_config()
 {
     return [
@@ -32,16 +24,12 @@ function esewaV2_config()
         "product_code" => [
             "FriendlyName" => "Product Code (Merchant Code)",
             "Type" => "text",
-            "Size" => "25",
-            "Default" => "",
-            "Description" => "Enter your merchant code provided by Esewa",
+            "Size" => "20",
         ],
         "secret_key" => [
             "FriendlyName" => "Secret Key",
             "Type" => "password",
             "Size" => "50",
-            "Default" => "",
-            "Description" => "Enter your Secret Key provided by Esewa",
         ],
         "testmode" => [
             "FriendlyName" => "Sandbox Mode",
@@ -54,22 +42,11 @@ function esewaV2_config()
 function esewaV2_link($params)
 {
     // Parameters
-        // Invoice Parameters
     $invoiceId = $params['invoiceid'];
     $amount = $params['amount'];
-
-    // Gateway Configuration Parameters
     $productCode = $params['testmode'] == 'on' ? 'EPAYTEST' : $params['product_code'];
     $secretKey = $params['testmode'] == 'on' ? '8gBm/:&EnhH.1/q' : $params['secret_key'];
 
-    // System Parameters
-    $systemUrl = $params['systemurl'];
-    $returnUrl = $params['returnurl'];
-    $langPayNow = $params['langpaynow'];
-    $moduleName = $params['paymentmethod'];
-
-    
-    
     $tax = 0;
     $serviceCharge = 0;
     $deliveryCharge = 0;
@@ -101,7 +78,6 @@ function esewaV2_link($params)
 
     // Form HTML
     $form = '<form method="POST" action="' . $url . '">';
-    
     foreach ($fields as $name => $value) {
         $form .= '<input type="hidden" name="' . $name . '" value="' . htmlspecialchars($value) . '">';
     }
@@ -113,10 +89,4 @@ function esewaV2_link($params)
     $form .= '</form>';
 
     return $form;
-}
-
-
-function esewa_refund($params)
-{
-    return false;
 }
